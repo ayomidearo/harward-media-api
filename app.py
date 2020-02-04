@@ -7,8 +7,8 @@ app = Flask(__name__)
 BASE_PATH = "/home/ubuntu/docker-airflow/dags/"
 
 
-@app.route('/create_dag')
-def hello_world():
+@app.route('/create_dag', methods=['GET'])
+def create_dag():
     with open("facebook_daily_dag_template.py", 'r') as template_content:
         ddd = date.today() + timedelta(days=1)
         content = template_content.read().replace("START_DATE", "datetime({year}, {month}, {day})".format(year=ddd.year, month=ddd.month, day=ddd.day))
