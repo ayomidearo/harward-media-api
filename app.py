@@ -1,3 +1,6 @@
+import os
+import time
+
 from flask import Flask
 from datetime import timedelta
 from datetime import date
@@ -27,6 +30,11 @@ def create_dag():
 
     with open("{}act_test_backlog_dag.py".format(BASE_PATH), 'w') as backlog_dag_file:
         backlog_dag_file.write(backlog_content)
+
+    time.sleep(2)
+
+    upload_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+    os.system(upload_command)
 
     return 'Request has been sent'
 
