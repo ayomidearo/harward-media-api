@@ -25,7 +25,7 @@ default_args = {
     'retry_delay': timedelta(minutes=60),
 }
 
-dag = DAG('DAG_NAME', default_args=default_args, schedule_interval=SCHEDULE_INTERVAL)
+dag = DAG('DAG_NAME', default_args=default_args, schedule_interval="SCHEDULE_INTERVAL")
 # dag = DAG('act_1259601010838576_daily_run_dag', default_args=default_args, schedule_interval=None)
 
 dag_config = Variable.get('VARIABLES_NAME', deserialize_json=True)

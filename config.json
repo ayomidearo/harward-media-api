@@ -1,0 +1,20 @@
+{
+	"mtn_bib_batch_job": {
+        "split_length": 690000,
+        "source_path": "/media/nas/data-source/mtn-audience-data",
+        "destination_path": "/usr/local/airflow/data/mtnbib",
+        "split_path":"/usr/local/airflow/data/mtnbib/input/split-files",
+        "temp_path":"/tmp/mtnbib",
+        "output_dir":"/usr/local/airflow/data/mtnbib/output",
+        "transformation_script":"/usr/local/airflow/dags/functions/mtnbib_transform.py",
+        "local_filepath":"/usr/local/airflow/data/mtnbib/input",
+        "failed_path":"/usr/local/airflow/data/mtnbib/ouput/failed",
+
+        "aws":{
+            "s3_bucket_name": "data-pipeline-lake-staging",
+            "bucket_key":"mtnbib",
+            "s3_path":"s3://data-pipeline-lake-staging/mtnbib",
+            "glue_job_name": "json-to-parquet"
+        }
+	}
+}
