@@ -20,8 +20,6 @@ def create_dag():
     print("Account ID ", account_id)
     print("Details ID ", details)
     if account_id:
-
-        account_id = "2116882338339744"
         file_name = "act_{account_id}_variables".format(account_id=account_id)
         variable_definition = {
             "act_{account_id}_dag_variables".format(account_id=account_id): json.loads(details)
