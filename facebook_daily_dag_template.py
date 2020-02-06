@@ -2,6 +2,7 @@ __author__ = 'Ayomide Aro'
 
 import os
 import json
+import boto3
 
 from airflow import DAG
 from airflow.models import Variable
@@ -45,6 +46,13 @@ s3_folder_path = "/{datasource_type}/{account_id}/{year}/{month}/{day}/"
 
 beginning_of_year = date(date.today().year, 1, 1)
 end_of_year = date(date.today().year, 12, 31)
+
+client = boto3.client(
+    'lambda',
+    aws_access_key_id=aws_conn.extra_dejson['aws_access_key_id'],
+    aws_secret_access_key=aws_conn.extra_dejson['aws_secret_access_key'],
+    region_name='us-west-2'
+)
 
 dates_and_preset = {
     "today": "0",
@@ -153,12 +161,15 @@ t4 = BashOperator(
 def upload_files_to_s3_bucket(**kwargs):
     files_to_upload = os.listdir(file_path + file_key_regex)
 
-    lambda_command = """aws_access_key_id={access_key} aws_secret_access_key={secret_key} aws lambda invoke --function-name deleteOldRecordsAndTriggerGlue --invocation-type Event --payload '{payload}' /usr/local/airflow/data/lambdaresponse.json""".format(
-        access_key=aws_conn.extra_dejson['aws_access_key_id'],
-        secret_key=aws_conn.extra_dejson['aws_secret_access_key'],
-        payload=json.dumps({"account_id": account_id, "file_names": files_to_upload}))
-    os.system(lambda_command)
-    time.sleep(1)
+    payload = json.dumps({"account_id": account_id, "file_names": files_to_upload})
+    response_from_lambda = client.invoke(
+        FunctionName='deleteOldRecordsAndTriggerGlue',
+        InvocationType='Event',
+        LogType='Tail',
+        Payload=payload
+    )
+
+    print("Response from lambda ", response_from_lambda)
 
     for file_name in files_to_upload:
         file_name_arr = file_name.split("_")
