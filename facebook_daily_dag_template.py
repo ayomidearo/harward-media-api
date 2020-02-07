@@ -42,6 +42,7 @@ insight_fields = dag_config['insight_fields']
 action_attribution_windows = dag_config['action_attribution_windows']
 file_path = dag_config['file_path']
 time_increment = dag_config['time_increment']
+backlogdays = dag_config['backlog_days']
 s3_folder_path = "/{datasource_type}/{account_id}/{year}/{month}/{day}/"
 
 beginning_of_year = date(date.today().year, 1, 1)
@@ -107,6 +108,7 @@ t3 = FacebookAdsInsightsToS3Operator(
     time_increment=time_increment,
     date_preset=date_preset,
     call_type="daily",
+    backlogdays=backlogdays,
     file_path=file_path + file_key_regex,
     file_key=file_key,
     access_token=access_token,

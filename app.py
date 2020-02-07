@@ -66,7 +66,8 @@ def create_dag():
                     dag_file.write(content)
 
                 with open("facebook_backlog_dag_template.py", 'r') as backlog_template_content:
-                    backlog_ddd = date.today() + timedelta(days=1)
+                    #backlog_ddd = date.today() + timedelta(days=1)
+                    backlog_ddd = date.today()
                     backlog_content = backlog_template_content.read().replace("START_DATE",
                                                                               "datetime({year}, {month}, {day})".format(
                                                                                   year=backlog_ddd.year,
@@ -95,6 +96,9 @@ def create_dag():
                 os.system(set_variable_command)
                 time.sleep(1)
                 restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+                os.system(restart_command)
+                time.sleep(1)
+                unpause_dag = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
                 os.system(restart_command)
 
         elif event_type == "deletion":

@@ -38,6 +38,7 @@ insight_fields = dag_config['insight_fields']
 action_attribution_windows = dag_config['action_attribution_windows']
 file_path = dag_config['file_path']
 time_increment = dag_config['time_increment']
+backlogdays = dag_config['backlog_days']
 days = 29 + int(dag_config['backlog_days'])
 # today = datetime.today().strftime('%Y-%m-%d')
 today = date.today().isoformat()
@@ -67,20 +68,13 @@ t3 = FacebookAdsInsightsToS3Operator(
     time_increment=time_increment,
     date_preset=date_preset,
     call_type="backlog",
+    backlogdays=backlogdays,
     file_path=file_path + file_key_regex,
     file_key=file_key,
     access_token=access_token,
     api_version=api_version,
     dag=dag
 )
-# bash_command = """sleep 30 && aws_access_key_id={access_key} aws_secret_access_key={secret_key} aws s3 mv {filepath} s3://{s3_bucket}/{s3_key}/ --recursive""".format(
-#     s3_bucket=s3_bucket, dt=today, s3_key=s3_key, filepath=file_path + file_key_regex,
-#     access_key=aws_conn.extra_dejson['aws_access_key_id'], secret_key=aws_conn.extra_dejson['aws_secret_access_key'])
-#
-# t1 = BashOperator(
-#     task_id='upload_data_to_s3',
-#     bash_command=bash_command,
-#     dag=dag)
 
 
 def confirm_parameters(**kwargs):
@@ -154,5 +148,4 @@ t5 = PythonOperator(
     dag=dag
 )
 
-# t0 >> t1
 t1 >> t2 >> t3 >> t4 >> t5
