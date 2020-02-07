@@ -97,9 +97,12 @@ def create_dag():
                 time.sleep(1)
                 restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
                 os.system(restart_command)
+                time.sleep(3)
+                unpause_dag = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow unpause {DAG_ID}""".format(DAG_ID="act_{account_id}_daily_run_dag".format(account_id=account_id))
+                unpause_backlog_dag = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow unpause {DAG_ID}""".format(DAG_ID="act_{account_id}_backlog_run_dag".format(account_id=account_id))
+                os.system(unpause_dag)
                 time.sleep(1)
-                unpause_dag = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
-                os.system(restart_command)
+                os.system(unpause_backlog_dag)
 
         elif event_type == "deletion":
             deletion_command = """cd /home/ubuntu/docker-airflow && sudo rm -rf /home/ubuntu/docker-airflow/dags/act_{account_id}*""".format(
