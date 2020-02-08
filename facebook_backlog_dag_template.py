@@ -130,7 +130,7 @@ def upload_files_to_s3_bucket(**kwargs):
         month = date_key_arr[1]
         dayy = str(date_key_arr[2]).replace(".json", "")
         time.sleep(3)
-        s3_folder = s3_folder_path.format(datasource_type=datasource_type, account_id=account_id+"_backlog", year=year,
+        s3_folder = s3_folder_path.format(datasource_type=datasource_type, account_id=account_id, year=year,
                                           month=month, day=dayy)
         upload_command = """aws_access_key_id={access_key} aws_secret_access_key={secret_key} aws s3 mv {filepath} s3://{s3_bucket}{s3_key}data.json """.format(
             s3_bucket=s3_bucket, s3_key=s3_folder, filepath=file_path + file_key_regex + file_name,
