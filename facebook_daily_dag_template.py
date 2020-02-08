@@ -24,7 +24,7 @@ default_args = {
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 23,
-    'retry_delay': timedelta(minutes=60),
+    'retry_delay': timedelta(minutes=3),
 }
 
 dag = DAG('DAG_NAME', catchup=False, default_args=default_args, schedule_interval="SCHEDULE_INTERVAL")
