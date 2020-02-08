@@ -24,7 +24,7 @@ default_args = {
     'retry_delay': timedelta(minutes=20),
 }
 
-dag = DAG('DAG_NAME', default_args=default_args, schedule_interval=None)
+dag = DAG('DAG_NAME', default_args=default_args, schedule_interval="@once")
 
 dag_config = Variable.get('VARIABLES_NAME', deserialize_json=True)
 aws_conn = BaseHook.get_connection("aws_conn")

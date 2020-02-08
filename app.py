@@ -50,7 +50,7 @@ def create_dag():
                     "act_{account_id}_dag_variables".format(account_id=account_id): json.loads(details)
                 }
                 with open("facebook_daily_dag_template.py", 'r') as template_content:
-                    ddd = date.today() + timedelta(days=1)
+                    ddd = date.today()
                     content = template_content.read().replace("START_DATE",
                                                               "datetime({year}, {month}, {day})".format(year=ddd.year,
                                                                                                         month=ddd.month,
