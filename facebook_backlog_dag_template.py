@@ -122,6 +122,8 @@ t4 = BashOperator(
 def upload_files_to_s3_bucket(**kwargs):
     files_to_upload = os.listdir(file_path + file_key_regex)
 
+    print("Files to upload >>>>>> ", files_to_upload)
+
     for file_name in files_to_upload:
         file_name_arr = file_name.split("_")
         date_key = file_name_arr[3]
@@ -132,11 +134,13 @@ def upload_files_to_s3_bucket(**kwargs):
         time.sleep(3)
         s3_folder = s3_folder_path.format(datasource_type=datasource_type, account_id=account_id, year=year,
                                           month=month, day=dayy)
-        upload_command = """aws_access_key_id={access_key} aws_secret_access_key={secret_key} aws s3 mv {filepath} s3://{s3_bucket}{s3_key}data.json """.format(
+        upload_command = """aws_access_key_id={access_key} aws_secret_access_key={secret_key} aws s3 mv {filepath} s3://{s3_bucket}{s3_key}data.json""".format(
             s3_bucket=s3_bucket, s3_key=s3_folder, filepath=file_path + file_key_regex + file_name,
             access_key=aws_conn.extra_dejson['aws_access_key_id'],
             secret_key=aws_conn.extra_dejson['aws_secret_access_key'])
+        print("Upload command >>>>>>> ", upload_command)
         os.system(upload_command)
+        print("Uploaded successfully >>>>>>>> ")
         time.sleep(2)
 
     return True
