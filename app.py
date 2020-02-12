@@ -124,7 +124,7 @@ def create_dag():
 
 
 @app.route('/create_stripe_dag', methods=['GET'])
-def create_dag():
+def create_stripe_dag():
     account_name = request.args.get('account_name')
     details = request.args.get('details')
     event_type = request.args.get('event_type')
