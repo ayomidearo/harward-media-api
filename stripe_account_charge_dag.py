@@ -62,7 +62,7 @@ s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_t
 
 
 def get_insight_from_stripe(ds, **kwargs):
-    r = redis.Redis(host='redis', port=6379, db=0)
+    r = redis.Redis(host='redis', port=6379, db=1)
 
     if r.exists(dag_name) == 1:
         filename = 'charge_data_{0}.json'.format(timestamp)
