@@ -42,7 +42,7 @@ file_path = dag_config['file_path']
 s3_folder_path = "/{datasource_type}/{transaction_type}/{account_name}/{year}/{month}/{day}/"
 
 # file_key = 'act_{0}_DAY.json'.format(account_name)
-file_key_regex = 'stripe_refund_{0}/'.format(account_name)
+file_key_regex = 'stripe_balance_transaction_{0}/'.format(account_name)
 # s3_key = 'act_{}'.format(account_name)
 
 print("Starting job rn ")
@@ -56,7 +56,7 @@ year = date_key_arr[0]
 month = date_key_arr[1]
 dayy = date_key_arr[2]
 
-s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_type='refund', account_name=account_name,
+s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_type='balance_transaction', account_name=account_name,
                                   year=year,
                                   month=month, day=dayy)
 
@@ -65,9 +65,9 @@ def get_insight_from_stripe(ds, **kwargs):
     r = redis.Redis(host='redis', port=6379, db=0)
 
     if r.exists(dag_name) == 1:
-        filename = 'refund_data_{0}.json'.format(timestamp)
+        filename = 'balance_transaction_data_{0}.json'.format(timestamp)
         f = open(file_path + file_key_regex + filename, 'w+')
-        new_data = stripe.Refund.list(ending_before=r.hget(dag_name, "last_obj_id"), expand=['data.balance_transaction'])
+        new_data = stripe.BalanceTransaction.list(ending_before=r.hget(dag_name, "last_obj_id"))
         if len(new_data['data']) == 0:
             f.close()
             return filename
@@ -84,9 +84,9 @@ def get_insight_from_stripe(ds, **kwargs):
             r.hset(dag_name, "last_obj_id", last_obj_id)
             return filename
     else:
-        filename = 'refund_data_{0}.json'.format(timestamp)
+        filename = 'balance_transaction_data_{0}.json'.format(timestamp)
         f = open(file_path + file_key_regex + filename, 'w+')
-        backlog_data = stripe.Refund.list(expand=['data.balance_transaction'])
+        backlog_data = stripe.BalanceTransaction.list()
         if len(backlog_data['data']) == 0:
             f.close()
             return filename
@@ -101,14 +101,14 @@ def get_insight_from_stripe(ds, **kwargs):
             return filename
 
 
-def upload_refund_data_to_s3_bucket(**kwargs):
+def upload_balance_transaction_data_to_s3_bucket(**kwargs):
     date_key = date.today()
 
     date_key_arr = str(date_key).split("-")
     year = date_key_arr[0]
     month = date_key_arr[1]
     dayy = date_key_arr[2]
-    s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_type='refund',
+    s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_type='balance_transaction',
                                       account_name=account_name,
                                       year=year,
                                       month=month, day=dayy)
@@ -132,8 +132,8 @@ def upload_refund_data_to_s3_bucket(**kwargs):
 
 
 t3 = PythonOperator(
-    task_id='upload_refund_data_to_s3_bucket',
-    python_callable=upload_refund_data_to_s3_bucket,
+    task_id='upload_balance_transaction_data_to_s3_bucket',
+    python_callable=upload_balance_transaction_data_to_s3_bucket,
     provide_context=True,
     dag=dag
 )

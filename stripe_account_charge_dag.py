@@ -67,7 +67,7 @@ def get_insight_from_stripe(ds, **kwargs):
     if r.exists(dag_name) == 1:
         filename = 'charge_data_{0}.json'.format(timestamp)
         f = open(file_path + file_key_regex + filename, 'w+')
-        new_data = stripe.Charge.list(ending_before=r.hget(dag_name, "last_obj_id"))
+        new_data = stripe.Charge.list(ending_before=r.hget(dag_name, "last_obj_id"), expand=['data.balance_transaction'])
         if len(new_data['data']) == 0:
             f.close()
             return filename
@@ -86,7 +86,7 @@ def get_insight_from_stripe(ds, **kwargs):
     else:
         filename = 'charge_data_{0}.json'.format(timestamp)
         f = open(file_path + file_key_regex + filename, 'w+')
-        backlog_data = stripe.Charge.list()
+        backlog_data = stripe.Charge.list(expand=['data.balance_transaction'])
         if len(backlog_data['data']) == 0:
             f.close()
             return filename
