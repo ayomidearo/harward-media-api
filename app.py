@@ -173,7 +173,7 @@ def create_stripe_dag():
                     dispute_content = dispute_content.replace('VARIABLES_NAME',
                                                             "stripe_{account_name}_dag_variables".format(
                                                                 account_name=account_name))
-                    dispute_content = dispute_content.replace('SCHEDULE_INTERVAL', "0 */4 * * *")
+                    dispute_content = dispute_content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
 
                 with open("{BASE_PATH}stripe_{account_name}_dispute_dag.py".format(BASE_PATH=BASE_PATH,
                                                                                   account_name=account_name),
@@ -193,7 +193,7 @@ def create_stripe_dag():
                     refund_content = refund_content.replace('VARIABLES_NAME',
                                                             "stripe_{account_name}_dag_variables".format(
                                                                 account_name=account_name))
-                    refund_content = refund_content.replace('SCHEDULE_INTERVAL', "0 */4 * * *")
+                    refund_content = refund_content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
 
                 with open("{BASE_PATH}stripe_{account_name}_refund_dag.py".format(BASE_PATH=BASE_PATH,
                                                                                   account_name=account_name),
