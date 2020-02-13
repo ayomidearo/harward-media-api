@@ -153,7 +153,7 @@ def create_stripe_dag():
                     charge_content = charge_content.replace('VARIABLES_NAME',
                                                             "stripe_{account_name}_dag_variables".format(
                                                                 account_name=account_name))
-                    charge_content = charge_content.replace('SCHEDULE_INTERVAL', "0 */4 * * *")
+                    charge_content = charge_content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
 
                 with open("{BASE_PATH}stripe_{account_name}_charge_dag.py".format(BASE_PATH=BASE_PATH,
                                                                                   account_name=account_name),
