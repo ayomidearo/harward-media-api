@@ -72,7 +72,7 @@ def get_insight_from_shopify(ds, **kwargs):
             transaction_url + "?limit=250&since_id={since_id}".format(since_id=r.hget(dag_name, "since_id")))
         insight_response_body = res.json()
 
-        if res.headers['Link']:
+        if res.headers.get('Link') is not None:
             cursor = str(res.headers['Link']).split(',')
 
             next_urls = [_ for _ in cursor if _.find('next') > 0]
