@@ -133,7 +133,8 @@ def create_stripe_dag():
     if account_name:
         if event_type == "creation":
             if os.path.exists(
-                    '{BASE_PATH}stripe_{account_name}_charge_dag.py'.format(account_name=account_name, BASE_PATH=BASE_PATH)):
+                    '{BASE_PATH}stripe_{account_name}_charge_dag.py'.format(account_name=account_name,
+                                                                            BASE_PATH=BASE_PATH)):
                 pass
             else:
                 file_name = "stripe_{account_name}_variables".format(account_name=account_name)
@@ -163,20 +164,20 @@ def create_stripe_dag():
                 with open("stripe_account_dispute_dag.py", 'r') as dispute_template_content:
                     ddd = date.today()
                     dispute_content = dispute_template_content.read().replace("START_DATE",
-                                                                            "datetime({year}, {month}, {day})".format(
-                                                                                year=ddd.year,
-                                                                                month=ddd.month,
-                                                                                day=ddd.day))
+                                                                              "datetime({year}, {month}, {day})".format(
+                                                                                  year=ddd.year,
+                                                                                  month=ddd.month,
+                                                                                  day=ddd.day))
                     dispute_content = dispute_content.replace('DAG_NAME',
-                                                            "stripe_{account_name}_dispute_dag".format(
-                                                                account_name=account_name))
+                                                              "stripe_{account_name}_dispute_dag".format(
+                                                                  account_name=account_name))
                     dispute_content = dispute_content.replace('VARIABLES_NAME',
-                                                            "stripe_{account_name}_dag_variables".format(
-                                                                account_name=account_name))
+                                                              "stripe_{account_name}_dag_variables".format(
+                                                                  account_name=account_name))
                     dispute_content = dispute_content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
 
                 with open("{BASE_PATH}stripe_{account_name}_dispute_dag.py".format(BASE_PATH=BASE_PATH,
-                                                                                  account_name=account_name),
+                                                                                   account_name=account_name),
                           'w') as dispute_dag_file:
                     dispute_dag_file.write(dispute_content)
 
@@ -199,7 +200,6 @@ def create_stripe_dag():
                                                                                   account_name=account_name),
                           'w') as refund_dag_file:
                     refund_dag_file.write(refund_content)
-
 
                 with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
                                                                      filename=file_name),
@@ -240,6 +240,71 @@ def create_stripe_dag():
             # time.sleep(1)
             # restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
             # os.system(restart_command)
+
+        return 'Request For Dag Creation has been sent'
+    else:
+        return 'No account id found'
+
+
+@app.route('/create_shopify_dag', methods=['GET'])
+def create_shopify_dag():
+    shop_name = request.args.get('shop_name')
+    details = request.args.get('details')
+    event_type = request.args.get('event_type')
+    print("Shop Name ", shop_name)
+    print("Details ID ", details)
+    if shop_name:
+        if event_type == "creation":
+            if os.path.exists(
+                    '{BASE_PATH}shopify_{shop_name}_transaction_dag.py'.format(shop_name=shop_name,
+                                                                               BASE_PATH=BASE_PATH)):
+                pass
+            else:
+                file_name = "shopify_{shop_name}_variables".format(shop_name=shop_name)
+                variable_definition = {
+                    "shopify_{shop_name}_dag_variables".format(shop_name=shop_name): json.loads(details)
+                }
+                with open("shopify_account_dag.py", 'r') as transaction_template_content:
+                    ddd = date.today()
+                    transaction_content = transaction_template_content.read().replace("START_DATE",
+                                                                                      "datetime({year}, {month}, {day})".format(
+                                                                                          year=ddd.year,
+                                                                                          month=ddd.month,
+                                                                                          day=ddd.day))
+                    transaction_content = transaction_content.replace('DAG_NAME',
+                                                                      "shopify_{shop_name}_transaction_dag".format(
+                                                                          shop_name=shop_name))
+                    transaction_content = transaction_content.replace('VARIABLES_NAME',
+                                                                      "stripe_{shop_name}_dag_variables".format(
+                                                                          shop_name=shop_name))
+                    transaction_content = transaction_content.replace('SCHEDULE_INTERVAL', "0 * * * *")
+
+                with open("{BASE_PATH}shopify_{shop_name}_transaction_dag.py".format(BASE_PATH=BASE_PATH,
+                                                                                     shop_name=shop_name),
+                          'w') as transaction_dag_file:
+                    transaction_dag_file.write(transaction_content)
+
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
+
+                time.sleep(1)
+                restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+                os.system(restart_command)
+                time.sleep(3)
+                unpause_charge_dag = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow unpause {DAG_ID}""".format(
+                    DAG_ID="shopify_{shop_name}_transaction_dag".format(shop_name=shop_name))
+                os.system(unpause_charge_dag)
+
+        elif event_type == "deletion":
+            pass
 
         return 'Request For Dag Creation has been sent'
     else:
