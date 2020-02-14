@@ -277,7 +277,7 @@ def create_shopify_dag():
                     transaction_content = transaction_content.replace('VARIABLES_NAME',
                                                                       "shopify_{shop_name}_dag_variables".format(
                                                                           shop_name=shop_name))
-                    transaction_content = transaction_content.replace('SCHEDULE_INTERVAL', "0 * * * *")
+                    transaction_content = transaction_content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
 
                 with open("{BASE_PATH}shopify_{shop_name}_transaction_dag.py".format(BASE_PATH=BASE_PATH,
                                                                                      shop_name=shop_name),

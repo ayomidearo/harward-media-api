@@ -181,16 +181,13 @@ def upload_transaction_data_to_s3_bucket(**kwargs):
             s3_path_to_upload = """s3://{s3_bucket}{s3_key}{fff}""".format(
                 s3_bucket=s3_bucket, s3_key=s3_folder, fff=file_to_upload['filename'])
 
-            if os.stat(file_to_upload).st_size == 0:
-                return True
-            else:
-                upload_command = """AWS_ACCESS_KEY_ID={access_key} AWS_SECRET_ACCESS_KEY={secret_key} aws s3 mv {file_to_upload} {s3_path_to_upload}""".format(
-                    s3_path_to_upload=s3_path_to_upload, file_to_upload=file_to_upload['path'],
-                    access_key=aws_conn.extra_dejson['aws_access_key_id'],
-                    secret_key=aws_conn.extra_dejson['aws_secret_access_key'])
-                os.system(upload_command)
-                time.sleep(1)
-                return True
+            upload_command = """AWS_ACCESS_KEY_ID={access_key} AWS_SECRET_ACCESS_KEY={secret_key} aws s3 mv {file_to_upload} {s3_path_to_upload}""".format(
+                s3_path_to_upload=s3_path_to_upload, file_to_upload=file_to_upload['path'],
+                access_key=aws_conn.extra_dejson['aws_access_key_id'],
+                secret_key=aws_conn.extra_dejson['aws_secret_access_key'])
+            os.system(upload_command)
+            time.sleep(1)
+            return True
 
 
 t4 = PythonOperator(
