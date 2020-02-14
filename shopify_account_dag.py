@@ -172,7 +172,7 @@ def upload_transaction_data_to_s3_bucket(**kwargs):
     files_to_upload = kwargs['ti'].xcom_pull(task_ids='write_transaction_to_file')
     for file_to_upload in files_to_upload:
         if os.stat(file_to_upload['path']).st_size == 0:
-            return True
+            pass
         else:
             s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_type=file_to_upload['type'],
                                               shop_name=shop_name,
@@ -187,7 +187,7 @@ def upload_transaction_data_to_s3_bucket(**kwargs):
                 secret_key=aws_conn.extra_dejson['aws_secret_access_key'])
             os.system(upload_command)
             time.sleep(1)
-            return True
+    return True
 
 
 t4 = PythonOperator(
