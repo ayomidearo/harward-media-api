@@ -72,32 +72,35 @@ def get_insight_from_shopify(ds, **kwargs):
             transaction_url + "?limit=250&since_id={since_id}".format(since_id=r.hget(dag_name, "since_id")))
         insight_response_body = res.json()
 
-        cursor = str(res.headers['Link']).split(',')
-
-        next_urls = [_ for _ in cursor if _.find('next') > 0]
-
-        count = 0
-
-        while len(next_urls) > 0:
-            time.sleep(2)
-            transactions.extend(insight_response_body['transactions'])
-            print("Next url count {count} ".format(count=count), cursor)
-            next_url = next_urls[0].split(';')[0].strip('<>')
-            params = str(next_url).split("?")[1]
-            res = requests.get(transaction_url + "?" + params)
-            print("Count {count} ".format(count=count), res.headers['X-Shopify-Shop-Api-Call-Limit'])
-            print("Params count {count} ".format(count=count), params)
-            res.raise_for_status()
-            insight_response_body = res.json()
+        if res.headers['Link']:
             cursor = str(res.headers['Link']).split(',')
+
             next_urls = [_ for _ in cursor if _.find('next') > 0]
-            count = count + 1
 
-        transactions.extend(insight_response_body['transactions'])
+            count = 0
 
-        r.hset(dag_name, "since_id", transactions[-1]['id'])
+            while len(next_urls) > 0:
+                time.sleep(2)
+                transactions.extend(insight_response_body['transactions'])
+                print("Next url count {count} ".format(count=count), cursor)
+                next_url = next_urls[0].split(';')[0].strip('<>')
+                params = str(next_url).split("?")[1]
+                res = requests.get(transaction_url + "?" + params)
+                print("Count {count} ".format(count=count), res.headers['X-Shopify-Shop-Api-Call-Limit'])
+                print("Params count {count} ".format(count=count), params)
+                res.raise_for_status()
+                insight_response_body = res.json()
+                cursor = str(res.headers['Link']).split(',')
+                next_urls = [_ for _ in cursor if _.find('next') > 0]
+                count = count + 1
 
-        return transactions
+            transactions.extend(insight_response_body['transactions'])
+
+            r.hset(dag_name, "since_id", transactions[-1]['id'])
+
+            return transactions
+        else:
+            return transactions
     else:
         transactions = []
         res = requests.get(transaction_url + "?limit=250")
