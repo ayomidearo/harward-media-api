@@ -100,13 +100,18 @@ def get_insight_from_shopify(ds, **kwargs):
 
             return transactions
         else:
-            transactions.extend(insight_response_body['transactions'])
-            r.hset(dag_name, "since_id", transactions[-1]['id'])
-            return transactions
+            if len(insight_response_body['transactions']) > 0:
+                transactions.extend(insight_response_body['transactions'])
+                r.hset(dag_name, "since_id", transactions[-1]['id'])
+                return transactions
+            else:
+                return transactions
     else:
         transactions = []
         res = requests.get(transaction_url + "?limit=250")
         insight_response_body = res.json()
+
+        print("Initial transaction body ", insight_response_body)
 
         if res.headers.get('Link') is not None:
             cursor = str(res.headers['Link']).split(',')
@@ -136,9 +141,12 @@ def get_insight_from_shopify(ds, **kwargs):
 
             return transactions
         else:
-            transactions.extend(insight_response_body['transactions'])
-            r.hset(dag_name, "since_id", transactions[0]['id'])
-            return transactions
+            if len(insight_response_body['transactions']) > 0:
+                transactions.extend(insight_response_body['transactions'])
+                r.hset(dag_name, "since_id", transactions[0]['id'])
+                return transactions
+            else:
+                return transactions
 
 
 def write_transaction_to_file(**kwargs):
