@@ -69,7 +69,7 @@ def get_insight_from_shopify(ds, **kwargs):
     if r.exists(dag_name) == 1:
         transactions = []
         res = requests.get(
-            transaction_url + "?limit=250&since_id={since_id}".format(since_id=r.hget(dag_name, "since_id")))
+            transaction_url + "?limit=250&since_id={since_id}".format(since_id=int(r.hget(dag_name, "since_id"))))
         insight_response_body = res.json()
 
         if res.headers.get('Link') is not None:
