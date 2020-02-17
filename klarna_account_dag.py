@@ -62,7 +62,7 @@ def confirm_parameters(**kwargs):
 
 
 def get_insight_from_klarna(ds, **kwargs):
-    r = redis.Redis(host='redis', port=6379, db=1)
+    r = redis.Redis(host='redis', port=6379, db=2)
 
     session = requests.Session()
     session.auth = (klarna_username, klarna_password)
@@ -130,9 +130,9 @@ def get_insight_from_klarna(ds, **kwargs):
 
 
 def write_transaction_to_file(**kwargs):
-    charge_filename = 'charge_data_{0}.json'.format(timestamp)
-    refund_filename = 'refund_data_{0}.json'.format(timestamp)
-    dispute_filename = 'dispute_data_{0}.json'.format(timestamp)
+    charge_filename = 'sale_data_{0}.json'.format(timestamp)
+    refund_filename = 'return_data_{0}.json'.format(timestamp)
+    dispute_filename = 'reversal_data_{0}.json'.format(timestamp)
     fee_filename = 'fee_data_{0}.json'.format(timestamp)
     charge_f = open(file_path + file_key_regex + charge_filename, 'w+')
     refund_f = open(file_path + file_key_regex + refund_filename, 'w+')
@@ -156,9 +156,9 @@ def write_transaction_to_file(**kwargs):
     fee_f.close()
 
     return_data = [
-        {"type": "charge", "path": file_path + file_key_regex + charge_filename, "filename": charge_filename},
-        {"type": "refund", "path": file_path + file_key_regex + refund_filename, "filename": refund_filename},
-        {"type": "dispute", "path": file_path + file_key_regex + dispute_filename, "filename": dispute_filename},
+        {"type": "sale", "path": file_path + file_key_regex + charge_filename, "filename": charge_filename},
+        {"type": "return", "path": file_path + file_key_regex + refund_filename, "filename": refund_filename},
+        {"type": "reversal", "path": file_path + file_key_regex + dispute_filename, "filename": dispute_filename},
         {"type": "fee", "path": file_path + file_key_regex + fee_filename, "filename": fee_filename},
     ]
 
