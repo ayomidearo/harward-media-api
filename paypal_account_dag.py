@@ -123,7 +123,7 @@ def back_log_days(**kwargs):
 
 
 def get_insight_from_paypal(ds, **kwargs):
-    rd = redis.Redis(host='redis', port=6379, db=2)
+    rd = redis.Redis(host='redis', port=6379, db=4)
 
     access_token = kwargs['ti'].xcom_pull(task_ids='get_access_token')
 
@@ -170,6 +170,7 @@ def get_insight_from_paypal(ds, **kwargs):
             page = page + 1
 
         ttt.extend(body['transaction_details'])
+        rd.hset(dag_name, "last_date", body["last_refreshed_datetime"])
 
         return ttt
     else:

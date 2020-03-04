@@ -459,5 +459,75 @@ def create_paypal_dag():
         return 'No account id found'
 
 
+@app.route('/create_authorize_dag', methods=['GET'])
+def create_authorize_dag():
+    account_name = request.args.get('account_name')
+    details = request.args.get('details')
+    event_type = request.args.get('event_type')
+    print("Account Name ", account_name)
+    print("Details ID ", details)
+    if account_name:
+        if event_type == "creation":
+            if os.path.exists(
+                    '{BASE_PATH}authorize_{account_name}_transaction_dag.py'.format(account_name=account_name,
+                                                                                 BASE_PATH=BASE_PATH)):
+                pass
+            else:
+                file_name = "authorize_{account_name}_variables".format(account_name=account_name)
+                variable_definition = {
+                    "authorize_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("authorize_account_dag.py", 'r') as transaction_template_content:
+                    ddd = date.today()
+                    transaction_content = transaction_template_content.read().replace("START_DATE",
+                                                                                      "datetime({year}, {month}, {day})".format(
+                                                                                          year=ddd.year,
+                                                                                          month=ddd.month,
+                                                                                          day=ddd.day))
+                    transaction_content = transaction_content.replace('DAG_NAME',
+                                                                      "authorize_{account_name}_transaction_dag".format(
+                                                                          account_name=account_name))
+                    transaction_content = transaction_content.replace('VARIABLES_NAME',
+                                                                      "authorize_{account_name}_dag_variables".format(
+                                                                          account_name=account_name))
+                    transaction_content = transaction_content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
+
+                with open("{BASE_PATH}authorize_{account_name}_transaction_dag.py".format(BASE_PATH=BASE_PATH,
+                                                                                       account_name=account_name),
+                          'w') as transaction_dag_file:
+                    transaction_dag_file.write(transaction_content)
+
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
+
+                time.sleep(1)
+                restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+                os.system(restart_command)
+
+        elif event_type == "deletion":
+            deletion_command = """cd /home/ubuntu/docker-airflow && sudo rm -rf /home/ubuntu/docker-airflow/dags/authorize_{account_name}*""".format(
+                account_name=account_name)
+            os.system(deletion_command)
+            time.sleep(1)
+            deletion_var_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/authorize_{account_name}_variables.json""".format(
+                account_name=account_name)
+            os.system(deletion_var_command)
+            time.sleep(1)
+            restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+            os.system(restart_command)
+
+        return 'Request For Dag Creation has been sent'
+    else:
+        return 'No account id found'
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
