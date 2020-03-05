@@ -111,7 +111,8 @@ def get_batch_ids(ds, **kwargs):
     if rd.exists(dag_name) == 1:
         batch_ids = []
 
-        ddd = dateparser.parse(str(rd.hget(dag_name, "last_date")))
+        tttt = rd.hget(dag_name, "last_date")
+        ddd = dateparser.parse(tttt.decode("utf-8"))
         eee = datetime.now()
 
         print("Starting Date >>>>>> ", ddd)
