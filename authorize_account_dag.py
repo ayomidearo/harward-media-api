@@ -150,7 +150,7 @@ def get_batch_ids(ds, **kwargs):
                     print('Failed to get settled batch list.\nCode:%s \nText:%s' % (
                         settledBatchListResponse.messages.message[0].code,
                         settledBatchListResponse.messages.message[0].text))
-        rd.hset(dag_name, "last_date", eee)
+        rd.hset(dag_name, "last_date", str(eee))
 
         return batch_ids
     else:
@@ -194,7 +194,7 @@ def get_batch_ids(ds, **kwargs):
                         print('Failed to get settled batch list.\nCode:%s \nText:%s' % (
                             settledBatchListResponse.messages.message[0].code,
                             settledBatchListResponse.messages.message[0].text))
-            rd.hset(dag_name, "last_date", eee)
+            rd.hset(dag_name, "last_date", str(eee))
 
         return batch_ids
 
