@@ -106,12 +106,12 @@ def back_log_days(**kwargs):
 
 
 def get_batch_ids(ds, **kwargs):
-    rd = redis.Redis(host='redis', port=6379, db=2)
+    rd = redis.Redis(host='redis', port=6379, db=1)
 
     if rd.exists(dag_name) == 1:
         batch_ids = []
 
-        ddd = rd.hget(dag_name, "last_date")
+        ddd = str(rd.hget(dag_name, "last_date"))
         eee = datetime.now()
 
         print("Starting Date >>>>>> ", ddd)
@@ -151,6 +151,7 @@ def get_batch_ids(ds, **kwargs):
                         settledBatchListResponse.messages.message[0].code,
                         settledBatchListResponse.messages.message[0].text))
         rd.hset(dag_name, "last_date", str(eee))
+        print("Last saved date for rerun >>>>>>>>>>>> ", str(rd.hget(dag_name, "last_date")))
 
         return batch_ids
     else:
@@ -195,6 +196,7 @@ def get_batch_ids(ds, **kwargs):
                             settledBatchListResponse.messages.message[0].code,
                             settledBatchListResponse.messages.message[0].text))
             rd.hset(dag_name, "last_date", str(eee))
+            print("Last saved date >>>>>>>>>>>> ", str(rd.hget(dag_name, "last_date")))
 
         return batch_ids
 
