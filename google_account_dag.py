@@ -219,7 +219,6 @@ def upload_files_to_s3_bucket(**kwargs):
         year = date_key_arr[0]
         month = date_key_arr[1]
         dayy = str(date_key_arr[2]).replace(".json", "")
-        time.sleep(3)
         s3_folder = s3_folder_path.format(datasource_type=datasource_type, account_id=account_id,
                                           year=year,
                                           month=month, day=dayy)
