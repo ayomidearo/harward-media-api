@@ -41,7 +41,6 @@ datasource_type = dag_config['datasource_type']
 date_preset = dag_config['date_preset']
 account_id = dag_config['account_id']
 account_name = dag_config['account_name']
-access_token = dag_config['access_token']
 file_path = dag_config['file_path']
 backlogdays = dag_config['backlog_days']
 s3_folder_path = "/{datasource_type}/{account_id}/{year}/{month}/{day}/"
