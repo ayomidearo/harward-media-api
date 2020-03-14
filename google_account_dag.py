@@ -62,6 +62,7 @@ today_without_iso = date.today()
 the_day = int(date_preset)
 
 since = (date.today() - timedelta(days=the_day)).isoformat()
+back = (date.today() - timedelta(days=int(backlogdays))).isoformat()
 # since_without_iso = (date.today() - timedelta(days=the_day))
 
 
@@ -71,6 +72,7 @@ s3_key = 'google_{}'.format(account_id)
 
 print("Today is >>> ", today)
 print("Since is >>> ", since)
+print("Backlog is >>> ", since)
 
 print("Starting job rn ")
 
