@@ -559,9 +559,9 @@ def create_google_dag():
                     file_name=file_name)
                 os.system(set_variable_command)
             else:
-                file_name = "act_{account_name}_variables".format(account_name=account_name)
+                file_name = "google_{account_name}_variables".format(account_name=account_name)
                 variable_definition = {
-                    "act_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                    "google_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
                 }
                 with open("google_account_dag.py", 'r') as google_template_content:
                     ddd = date.today()
