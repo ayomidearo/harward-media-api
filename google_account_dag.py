@@ -76,7 +76,7 @@ print("Backlog is >>> ", since)
 
 print("Starting job rn ")
 
-rd = redis.Redis(host='redis', port=6379, db=2)
+rd = redis.Redis(host='redis', port=6379, db=5)
 
 
 def confirm_parameters(**kwargs):
