@@ -10,6 +10,7 @@ from flask import request
 app = Flask(__name__)
 
 BASE_PATH = "/home/ubuntu/docker-airflow/dags/"
+BASE_PATH_KEYS = "/home/ubuntu/docker-airflow/keys/"
 
 
 # BASE_PATH = "/Users/arolambo/Code/harward-media-api/"
@@ -560,9 +561,20 @@ def create_google_dag():
                 os.system(set_variable_command)
             else:
                 file_name = "google_{account_name}_variables".format(account_name=account_name)
+                d = json.loads(details)
                 variable_definition = {
-                    "google_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                    "google_{account_name}_dag_variables".format(account_name=account_name): d
                 }
+                with open("googlead.yaml", 'r') as google_ad_yaml_content:
+                    g_content = google_ad_yaml_content.read().replace("DEVELOPER_TOKEN", d['developer_token'])
+                    g_content = g_content.replace("CLIENT_ID", d['client_id'])
+                    g_content = g_content.replace("CLIENT_SECRET", d['client_secret'])
+                    g_content = g_content.replace("REFRESH_TOKEN", d['refresh_token'])
+
+                with open("{BASE_PATH}google_{account_name}_dag.yaml".format(BASE_PATH=BASE_PATH_KEYS,
+                                                                           account_name=account_name),
+                          'w') as dag_file:
+                    dag_file.write(g_content)
                 with open("google_account_dag.py", 'r') as google_template_content:
                     ddd = date.today()
                     content = google_template_content.read().replace("START_DATE",
@@ -575,6 +587,8 @@ def create_google_dag():
                     content = content.replace('VARIABLES_NAME',
                                               "google_{account_name}_dag_variables".format(account_name=account_name))
                     content = content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
+                    content = content.replace('YAML_FILE', "google_{account_name}_dag.yaml".format(
+                                                                           account_name=account_name))
 
                 with open("{BASE_PATH}google_{account_name}_dag.py".format(BASE_PATH=BASE_PATH,
                                                                            account_name=account_name),
@@ -600,6 +614,10 @@ def create_google_dag():
             os.system(deletion_command)
             time.sleep(1)
             deletion_var_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/google_{account_name}_variables.json""".format(
+                account_name=account_name)
+            os.system(deletion_var_command)
+            time.sleep(1)
+            deletion_var_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/keys/google_{account_name}_dag.yaml""".format(
                 account_name=account_name)
             os.system(deletion_var_command)
             time.sleep(1)

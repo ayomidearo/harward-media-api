@@ -76,7 +76,7 @@ print("Backlog is >>> ", since)
 
 print("Starting job rn ")
 
-rd = redis.Redis(host='redis', port=6379, db=5)
+rd = redis.Redis(host='redis', port=6379, db=2)
 
 
 def confirm_parameters(**kwargs):
@@ -115,7 +115,7 @@ def get_report_from_google(ds, **kwargs):
         output = io.StringIO()
 
         # Initialize client object.
-        adwords_client = adwords.AdWordsClient.LoadFromStorage('/usr/local/airflow/keys/googleads.yaml')
+        adwords_client = adwords.AdWordsClient.LoadFromStorage('/usr/local/airflow/keys/YAML_FILE')
 
         adwords_client.SetClientCustomerId(account_id)
 
