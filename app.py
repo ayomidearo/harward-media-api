@@ -3,7 +3,6 @@ import time
 import json
 
 from flask import Flask
-from datetime import timedelta
 from datetime import date
 from flask import request
 
@@ -11,9 +10,6 @@ app = Flask(__name__)
 
 BASE_PATH = "/home/ubuntu/docker-airflow/dags/"
 BASE_PATH_KEYS = "/home/ubuntu/docker-airflow/keys/"
-
-
-# BASE_PATH = "/Users/arolambo/Code/harward-media-api/"
 
 
 @app.route('/create_dag', methods=['GET'])
@@ -572,7 +568,7 @@ def create_google_dag():
                     g_content = g_content.replace("REFRESH_TOKEN", d['refresh_token'])
 
                 with open("{BASE_PATH}google_{account_name}_dag.yaml".format(BASE_PATH=BASE_PATH_KEYS,
-                                                                           account_name=account_name),
+                                                                             account_name=account_name),
                           'w') as dag_file:
                     dag_file.write(g_content)
                 with open("google_account_dag.py", 'r') as google_template_content:
@@ -588,7 +584,7 @@ def create_google_dag():
                                               "google_{account_name}_dag_variables".format(account_name=account_name))
                     content = content.replace('SCHEDULE_INTERVAL', "*/15 * * * *")
                     content = content.replace('YAML_FILE', "google_{account_name}_dag.yaml".format(
-                                                                           account_name=account_name))
+                        account_name=account_name))
 
                 with open("{BASE_PATH}google_{account_name}_dag.py".format(BASE_PATH=BASE_PATH,
                                                                            account_name=account_name),
@@ -618,6 +614,76 @@ def create_google_dag():
             os.system(deletion_var_command)
             time.sleep(1)
             deletion_var_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/keys/google_{account_name}_dag.yaml""".format(
+                account_name=account_name)
+            os.system(deletion_var_command)
+            time.sleep(1)
+            restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+            os.system(restart_command)
+
+        return 'Request For Dag Creation has been sent'
+    else:
+        return 'No account id found'
+
+
+@app.route('/create_clickfunnel_dag', methods=['GET'])
+def create_clickfunnel_dag():
+    account_name = request.args.get('account_name')
+    details = request.args.get('details')
+    event_type = request.args.get('event_type')
+    print("Account Name ", account_name)
+    print("Details ID ", details)
+    if account_name:
+        if event_type == "creation":
+            if os.path.exists(
+                    '{BASE_PATH}clickfunnel_{account_name}_dag.py'.format(account_name=account_name,
+                                                                          BASE_PATH=BASE_PATH)):
+                pass
+            else:
+                file_name = "clickfunnel_{account_name}_variables".format(account_name=account_name)
+                variable_definition = {
+                    "clickfunnel_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("click_funnel_dag.py", 'r') as clickfunnel_template_content:
+                    ddd = date.today()
+                    funnel_content = clickfunnel_template_content.read().replace("START_DATE",
+                                                                                 "datetime({year}, {month}, {day})".format(
+                                                                                     year=ddd.year,
+                                                                                     month=ddd.month,
+                                                                                     day=ddd.day))
+                    funnel_content = funnel_content.replace('DAG_NAME',
+                                                            "clickfunnel_{account_name}_dag".format(
+                                                                account_name=account_name))
+                    funnel_content = funnel_content.replace('VARIABLES_NAME',
+                                                            "clickfunnel_{account_name}_dag_variables".format(
+                                                                account_name=account_name))
+                    funnel_content = funnel_content.replace('SCHEDULE_INTERVAL', "0 * * * *")
+
+                with open("{BASE_PATH}clickfunnel_{account_name}_dag.py".format(BASE_PATH=BASE_PATH,
+                                                                                account_name=account_name),
+                          'w') as clickfunnel_dag_file:
+                    clickfunnel_dag_file.write(funnel_content)
+
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
+
+                time.sleep(1)
+                restart_command = """cd /home/ubuntu/docker-airflow &&  sudo docker restart docker-airflow_webserver_1 """
+                os.system(restart_command)
+
+        elif event_type == "deletion":
+            deletion_command = """cd /home/ubuntu/docker-airflow && sudo rm -rf /home/ubuntu/docker-airflow/dags/clickfunnel_{account_name}*""".format(
+                account_name=account_name)
+            os.system(deletion_command)
+            time.sleep(1)
+            deletion_var_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/clickfunnel_{account_name}_variables.json""".format(
                 account_name=account_name)
             os.system(deletion_var_command)
             time.sleep(1)

@@ -106,82 +106,49 @@ def create_files(**kwargs):
 
 
 def get_report_from_google(ds, **kwargs):
+    start = datetime.today().date().isoformat().replace("-", "")
+    end = datetime.now() + timedelta(days=- int(backlogdays))
+    end = end.date().isoformat().replace("-", "")
+    ddd = end + ',' + start
     if rd.exists(dag_name) == 1:
         start = datetime.today().date().isoformat().replace("-", "")
         end = datetime.now() + timedelta(days=- the_day)
         end = end.date().isoformat().replace("-", "")
         ddd = end + ',' + start
-        # Define output as a string
-        output = io.StringIO()
 
-        # Initialize client object.
-        adwords_client = adwords.AdWordsClient.LoadFromStorage('/usr/local/airflow/keys/YAML_FILE')
+    # Define output as a string
+    output = io.StringIO()
 
-        adwords_client.SetClientCustomerId(account_id)
+    # Initialize client object.
+    adwords_client = adwords.AdWordsClient.LoadFromStorage('/usr/local/airflow/keys/YAML_FILE')
 
-        report_downloader = adwords_client.GetReportDownloader(version='v201809')
+    adwords_client.SetClientCustomerId(account_id)
 
-        report_query = (adwords.ReportQueryBuilder()
-                        .Select('Id', 'AdGroupId', 'CampaignId', 'CampaignName', 'Date', 'DayOfWeek', 'Clicks',
-                                'Impressions', 'Cost', 'Conversions', 'ConversionValue')
-                        .From('AD_PERFORMANCE_REPORT')
-                        .Where('CampaignStatus').In('ENABLED')
-                        .During(ddd)
-                        .Build())
+    report_downloader = adwords_client.GetReportDownloader(version='v201809')
 
-        print(report_query)
+    report_query = (adwords.ReportQueryBuilder()
+                    .Select('Id', 'AdGroupId', 'CampaignId', 'CampaignName', 'Date', 'DayOfWeek', 'Clicks',
+                            'Impressions', 'Cost', 'Conversions', 'ConversionValue')
+                    .From('AD_PERFORMANCE_REPORT')
+                    .Where('CampaignStatus').In('ENABLED')
+                    .During(ddd)
+                    .Build())
 
-        report_downloader.DownloadReportWithAwql(report_query, 'CSV', output, skip_report_header=True,
-                                                 skip_column_header=False, skip_report_summary=True,
-                                                 include_zero_impressions=False)
+    print(report_query)
 
-        output.seek(0)
+    report_downloader.DownloadReportWithAwql(report_query, 'CSV', output, skip_report_header=True,
+                                             skip_column_header=False, skip_report_summary=True,
+                                             include_zero_impressions=False)
 
-        types = {'CampaignId': pd.np.int64, 'Clicks': pd.np.int32, 'Impressions': pd.np.int32,
-                 'Cost': pd.np.float64, 'Conversions': pd.np.float64, 'ConversionValue': pd.np.float64}
+    output.seek(0)
 
-        df = pd.read_csv(output, low_memory=False, dtype=types, na_values=[' --'])
+    types = {'CampaignId': pd.np.int64, 'Clicks': pd.np.int32, 'Impressions': pd.np.int32,
+             'Cost': pd.np.float64, 'Conversions': pd.np.float64, 'ConversionValue': pd.np.float64}
 
-        rd.hset(dag_name, "account_id", account_id)
-        return df
-    else:
-        start = datetime.today().date().isoformat().replace("-", "")
-        end = datetime.now() + timedelta(days=- int(backlogdays))
-        end = end.date().isoformat().replace("-", "")
-        ddd = end + ',' + start
-        # Define output as a string
-        output = io.StringIO()
+    df = pd.read_csv(output, low_memory=False, dtype=types, na_values=[' --'])
 
-        # Initialize client object.
-        adwords_client = adwords.AdWordsClient.LoadFromStorage('/usr/local/airflow/keys/googleads.yaml')
-
-        adwords_client.SetClientCustomerId(account_id)
-
-        report_downloader = adwords_client.GetReportDownloader(version='v201809')
-
-        report_query = (adwords.ReportQueryBuilder()
-                        .Select('Id', 'AdGroupId', 'CampaignId', 'CampaignName', 'Date', 'DayOfWeek', 'Clicks',
-                                'Impressions', 'Cost', 'Conversions', 'ConversionValue')
-                        .From('AD_PERFORMANCE_REPORT')
-                        .Where('CampaignStatus').In('ENABLED')
-                        .During(ddd)
-                        .Build())
-
-        print(report_query)
-
-        report_downloader.DownloadReportWithAwql(report_query, 'CSV', output, skip_report_header=True,
-                                                 skip_column_header=False, skip_report_summary=True,
-                                                 include_zero_impressions=False)
-
-        output.seek(0)
-
-        types = {'CampaignId': pd.np.int64, 'Clicks': pd.np.int32, 'Impressions': pd.np.int32,
-                 'Cost': pd.np.float64, 'Conversions': pd.np.float64, 'ConversionValue': pd.np.float64}
-
-        df = pd.read_csv(output, low_memory=False, dtype=types, na_values=[' --'])
-
-        rd.hset(dag_name, "account_id", account_id)
-        return df
+    rd.hset(dag_name, "account_id", account_id)
+    return df
 
 
 def write_report_to_file(**kwargs):
