@@ -28,6 +28,9 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 import time
 import bs4
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+
 
 default_args = {
     'owner': 'airflow',
@@ -70,7 +73,9 @@ def get_report_from_funnel(ds, **kwargs):
     connection = postgres_hook.get_conn()
     options = Options()
     options.headless = True
-    browser = webdriver.Firefox(options=options, executable_path='/usr/local/airflow/keys/geckodriver')
+    binary = FirefoxBinary('/opt/firefox/firefox')
+
+    browser = webdriver.Firefox(options=options, firefox_binary=binary, executable_path='/usr/bin/geckodriver')
 
     cursor = connection.cursor()
 
@@ -156,14 +161,15 @@ def get_report_from_funnel(ds, **kwargs):
                 connection.commit()
             else:
                 insert_query = (
-                    "INSERT INTO funnels_data (funnel_url, html_data, group_name, funnel_name, last_updated, steps, step_name, step_type, step_link, funnel_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
+                    "INSERT INTO funnels_data (funnel_url, html_data, group_name, funnel_name, last_updated, steps, step_name, step_type, step_link, funnel_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
                 insert_values = (
                     visitUrl, htmlSource, groupName, funnelName, lastUpdated, steps, stepNameAr, stepTypeAr,
                     stepLinkUrl,
                     funnelId)
                 resp = cursor.execute(insert_query, insert_values)
                 connection.commit()
-
+    browser.quit()
+    time.sleep(5)
     return True
 
 
