@@ -94,8 +94,7 @@ def get_report_from_funnel(ds, **kwargs):
     except TimeoutException:
         print("Loading took too much time!")
 
-    ClickFunnelsLink = browser.find_element_by_link_text('Click Funnels')
-    ClickFunnelsLink.click()
+    browser.get('https://hmrand-app.clickfunnels.com/funnels')
     htmlContents = browser.find_elements_by_class_name("groupForFunnel")
     for htmlContent in htmlContents:
 
