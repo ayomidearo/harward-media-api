@@ -132,7 +132,24 @@ def create_stripe_dag():
             if os.path.exists(
                     '{BASE_PATH}stripe_{account_name}_charge_dag.py'.format(account_name=account_name,
                                                                             BASE_PATH=BASE_PATH)):
-                pass
+                file_name = "stripe_{account_name}_variables".format(account_name=account_name)
+                remove_file_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/{file_name}.json""".format(
+                    file_name=file_name)
+                os.system(remove_file_command)
+                time.sleep(1)
+                variable_definition = {
+                    "stripe_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
             else:
                 file_name = "stripe_{account_name}_variables".format(account_name=account_name)
                 variable_definition = {
@@ -254,7 +271,24 @@ def create_shopify_dag():
             if os.path.exists(
                     '{BASE_PATH}shopify_{shop_name}_transaction_dag.py'.format(shop_name=shop_name,
                                                                                BASE_PATH=BASE_PATH)):
-                pass
+                file_name = "shopify_{shop_name}_variables".format(shop_name=shop_name)
+                remove_file_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/{file_name}.json""".format(
+                    file_name=file_name)
+                os.system(remove_file_command)
+                time.sleep(1)
+                variable_definition = {
+                    "shopify_{shop_name}_dag_variables".format(shop_name=shop_name): json.loads(details)
+                }
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
             else:
                 file_name = "shopify_{shop_name}_variables".format(shop_name=shop_name)
                 variable_definition = {
@@ -328,7 +362,24 @@ def create_klarna_dag():
             if os.path.exists(
                     '{BASE_PATH}klarna_{account_name}_transaction_dag.py'.format(account_name=account_name,
                                                                                  BASE_PATH=BASE_PATH)):
-                pass
+                file_name = "klarna_{account_name}_variables".format(account_name=account_name)
+                remove_file_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/{file_name}.json""".format(
+                    file_name=file_name)
+                os.system(remove_file_command)
+                time.sleep(1)
+                variable_definition = {
+                    "klarna_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
             else:
                 file_name = "klarna_{account_name}_variables".format(account_name=account_name)
                 variable_definition = {
@@ -398,7 +449,24 @@ def create_paypal_dag():
             if os.path.exists(
                     '{BASE_PATH}paypal_{account_name}_transaction_dag.py'.format(account_name=account_name,
                                                                                  BASE_PATH=BASE_PATH)):
-                pass
+                file_name = "paypal_{account_name}_variables".format(account_name=account_name)
+                remove_file_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/{file_name}.json""".format(
+                    file_name=file_name)
+                os.system(remove_file_command)
+                time.sleep(1)
+                variable_definition = {
+                    "paypal_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
             else:
                 file_name = "paypal_{account_name}_variables".format(account_name=account_name)
                 variable_definition = {
@@ -468,7 +536,24 @@ def create_authorize_dag():
             if os.path.exists(
                     '{BASE_PATH}authorize_{account_name}_transaction_dag.py'.format(account_name=account_name,
                                                                                     BASE_PATH=BASE_PATH)):
-                pass
+                file_name = "authorize_{account_name}_variables".format(account_name=account_name)
+                remove_file_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/{file_name}.json""".format(
+                    file_name=file_name)
+                os.system(remove_file_command)
+                time.sleep(1)
+                variable_definition = {
+                    "authorize_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
             else:
                 file_name = "authorize_{account_name}_variables".format(account_name=account_name)
                 variable_definition = {
@@ -637,7 +722,24 @@ def create_clickfunnel_dag():
             if os.path.exists(
                     '{BASE_PATH}clickfunnel_{account_name}_dag.py'.format(account_name=account_name,
                                                                           BASE_PATH=BASE_PATH)):
-                pass
+                file_name = "clickfunnel_{account_name}_variables".format(account_name=account_name)
+                remove_file_command = """cd /home/ubuntu/docker-airflow && sudo rm -f /home/ubuntu/docker-airflow/dags/config/{file_name}.json""".format(
+                    file_name=file_name)
+                os.system(remove_file_command)
+                time.sleep(1)
+                variable_definition = {
+                    "clickfunnel_{account_name}_dag_variables".format(account_name=account_name): json.loads(details)
+                }
+                with open("{BASE_PATH}config/{filename}.json".format(BASE_PATH=BASE_PATH,
+                                                                     filename=file_name),
+                          'w') as variable_file:
+                    variable_file.write(json.dumps(variable_definition, indent=4))
+
+                time.sleep(2)
+
+                set_variable_command = """cd /home/ubuntu/docker-airflow &&  sudo docker-compose run --rm webserver airflow variables --import /usr/local/airflow/dags/config/{file_name}.json """.format(
+                    file_name=file_name)
+                os.system(set_variable_command)
             else:
                 file_name = "clickfunnel_{account_name}_variables".format(account_name=account_name)
                 variable_definition = {
