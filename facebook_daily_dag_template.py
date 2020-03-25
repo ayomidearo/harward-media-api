@@ -20,7 +20,7 @@ default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'start_date': START_DATE,
-    'email': ['admin@harwardmedia.com'],
+    'email': ['chris@harwardmedia.com'],
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 23,
