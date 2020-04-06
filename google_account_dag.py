@@ -76,7 +76,7 @@ print("Backlog is >>> ", since)
 
 print("Starting job rn ")
 
-rd = redis.Redis(host='redis', port=6379, db=5)
+rd = redis.Redis(host='redis', port=6379, db=7)
 
 
 def confirm_parameters(**kwargs):
@@ -127,7 +127,7 @@ def get_report_from_google(ds, **kwargs):
     report_downloader = adwords_client.GetReportDownloader(version='v201809')
 
     report_query = (adwords.ReportQueryBuilder()
-                    .Select('Id', 'AdGroupId', 'CampaignId', 'CampaignName', 'Date', 'DayOfWeek', 'Clicks',
+                    .Select('Id', 'AdGroupId', 'AdGroupName', 'Headline', 'CampaignId', 'CampaignName', 'Date', 'DayOfWeek', 'Clicks',
                             'Impressions', 'Cost', 'Conversions', 'ConversionValue')
                     .From('AD_PERFORMANCE_REPORT')
                     .Where('CampaignStatus').In('ENABLED')
@@ -168,16 +168,6 @@ t5_command = """find {path} -type f -size 0 | xargs rm -f""".format(path=file_pa
 
 def upload_files_to_s3_bucket(**kwargs):
     files_to_upload = os.listdir(file_path + file_key_regex)
-
-    payload = json.dumps({"account_id": account_id, "file_names": files_to_upload})
-    response_from_lambda = client.invoke(
-        FunctionName='deleteOldRecordsFromGoogleAndTriggerGlue',
-        InvocationType='Event',
-        LogType='Tail',
-        Payload=payload
-    )
-
-    print("Response from lambda ", response_from_lambda)
 
     for file_name in files_to_upload:
         file_name_arr = file_name.split("_")
