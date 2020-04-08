@@ -106,7 +106,7 @@ def back_log_days(**kwargs):
 
 
 def get_batch_ids(ds, **kwargs):
-    rd = redis.Redis(host='redis', port=6379, db=1)
+    rd = redis.Redis(host='redis', port=6379, db=9)
 
     if rd.exists(dag_name) == 1:
         batch_ids = []
@@ -121,8 +121,8 @@ def get_batch_ids(ds, **kwargs):
         settledBatchListRequest.merchantAuthentication = merchantAuth
         # settledBatchListRequest.firstSettlementDate = datetime.now() - timedelta(days=31)
         # settledBatchListRequest.firstSettlementDate = dateparser.parse('2020-02-10')
-        settledBatchListRequest.firstSettlementDate = ddd
-        settledBatchListRequest.lastSettlementDate = eee
+        # settledBatchListRequest.firstSettlementDate = ddd
+        # settledBatchListRequest.lastSettlementDate = eee
         # settledBatchListRequest.lastSettlementDate = datetime.now()
 
         settledBatchListController = getSettledBatchListController(settledBatchListRequest)
@@ -206,6 +206,7 @@ def get_transaction_list(ds, **kwargs):
     batch_ids = kwargs['ti'].xcom_pull(task_ids='get_batch_ids')
 
     transaction_ids = []
+    transaction_unsettled_ids = []
     for b in batch_ids:
         transactionListRequest = apicontractsv1.getTransactionListRequest()
         transactionListRequest.merchantAuthentication = merchantAuth
@@ -233,8 +234,6 @@ def get_transaction_list(ds, **kwargs):
 
                     except:
                         print('No records in batch id')
-                    for transaction in transactionListResponse.transactions.transaction:
-                        transaction_ids.append(transaction.transId)
 
                 if transactionListResponse.messages is not None:
                     print('Message Code : %s' % transactionListResponse.messages.message[0].code)
@@ -245,14 +244,54 @@ def get_transaction_list(ds, **kwargs):
                         transactionListResponse.messages.message[0].code,
                         transactionListResponse.messages.message[0].text))
 
-    return transaction_ids
+    unsettledTransactionListRequest = apicontractsv1.getUnsettledTransactionListRequest()
+    unsettledTransactionListRequest.merchantAuthentication = merchantAuth
+    paging = apicontractsv1.Paging()
+    paging.limit = '1000'
+    paging.offset = '1'
+    unsettledTransactionListRequest.paging = paging
+
+    unsettledTransactionListController = getUnsettledTransactionListController(unsettledTransactionListRequest)
+    unsettledTransactionListController.setenvironment(ENV)
+
+    unsettledTransactionListController.execute()
+
+    unsettledTransactionListResponse = unsettledTransactionListController.getresponse()
+
+    if unsettledTransactionListResponse is not None:
+        if unsettledTransactionListResponse.messages.resultCode == apicontractsv1.messageTypeEnum.Ok:
+            if hasattr(unsettledTransactionListResponse, 'transactions'):
+                print('Successfully gotten unsettled transaction list!')
+                try:
+
+                    for transaction in unsettledTransactionListResponse.transactions.transaction:
+                        transaction_unsettled_ids.append(transaction.transId)
+
+                except:
+                    print('No unsettled transaction ids')
+
+            if unsettledTransactionListResponse.messages is not None:
+                print('Message Code : %s' % unsettledTransactionListResponse.messages.message[0].code)
+                print('Message Text : %s' % unsettledTransactionListResponse.messages.message[0].text)
+        else:
+            if unsettledTransactionListResponse.messages is not None:
+                print('Failed to get unsettled transaction list.\nCode:%s \nText:%s' % (
+                    unsettledTransactionListResponse.messages.message[0].code,
+                    unsettledTransactionListResponse.messages.message[0].text))
+
+    return {'transaction_ids': transaction_ids, 'transaction_unsettled_ids': transaction_unsettled_ids}
 
 
 def get_transaction_details(ds, **kwargs):
-    t_list = kwargs['ti'].xcom_pull(task_ids='get_transaction_list')
+    t_obj = kwargs['ti'].xcom_pull(task_ids='get_transaction_list')
+
+    t_list = t_obj['transaction_ids']
+    t_u_list = t_obj['transaction_unsettled_ids']
 
     transaction_details_list = []
+    transaction_unsettled_details_list = []
     print("Length of transactions >>>>>> ", len(t_list))
+    print("Length of unsettled transactions >>>>>> ", len(t_u_list))
     for t in t_list:
         transactionDetailsRequest = apicontractsv1.getTransactionDetailsRequest()
         transactionDetailsRequest.merchantAuthentication = merchantAuth
@@ -294,22 +333,73 @@ def get_transaction_details(ds, **kwargs):
                         transactionDetailsResponse.messages.message[0].code,
                         transactionDetailsResponse.messages.message[0].text))
 
-    return transaction_details_list
+    for t in t_u_list:
+        transactionDetailsRequest = apicontractsv1.getTransactionDetailsRequest()
+        transactionDetailsRequest.merchantAuthentication = merchantAuth
+        transactionDetailsRequest.transId = str(t)
+
+        transactionDetailsController = getTransactionDetailsController(transactionDetailsRequest)
+        transactionDetailsController.setenvironment(ENV)
+
+        transactionDetailsController.execute()
+
+        transactionDetailsResponse = transactionDetailsController.getresponse()
+
+        if transactionDetailsResponse is not None:
+            if transactionDetailsResponse.messages.resultCode == apicontractsv1.messageTypeEnum.Ok:
+                print('Successfully got transaction details for unsettled!')
+
+                t = {
+                    "transaction_id": str(transactionDetailsResponse.transaction.transId),
+                    "transaction_type": str(transactionDetailsResponse.transaction.transactionType),
+                    "transaction_status": str(transactionDetailsResponse.transaction.transactionStatus),
+                    "auth_amount": float(transactionDetailsResponse.transaction.authAmount),
+                    "settlement_amount": float(transactionDetailsResponse.transaction.settleAmount),
+                    "date": str(transactionDetailsResponse.transaction.submitTimeUTC)
+                }
+
+                if hasattr(transactionDetailsResponse.transaction, 'tax'):
+                    t['tax'] = float(transactionDetailsResponse.transaction.tax.amount)
+                if hasattr(transactionDetailsResponse.transaction, 'profile'):
+                    t['customer_profile_id'] = str(transactionDetailsResponse.transaction.profile.customerProfileId)
+
+                transaction_unsettled_details_list.append(t)
+
+                if transactionDetailsResponse.messages is not None:
+                    print('Message Code : %s' % transactionDetailsResponse.messages.message[0].code)
+                    print('Message Text : %s' % transactionDetailsResponse.messages.message[0].text)
+            else:
+                if transactionDetailsResponse.messages is not None:
+                    print('Failed to get transaction details.\nCode:%s \nText:%s' % (
+                        transactionDetailsResponse.messages.message[0].code,
+                        transactionDetailsResponse.messages.message[0].text))
+
+    return {'transaction_details': transaction_details_list,
+            'transaction_unsettled_details': transaction_unsettled_details_list}
 
 
 def write_transaction_to_file(**kwargs):
     transaction_filename = 'transaction_data_{0}.json'.format(timestamp)
+    transaction_unsettled_filename = 'transaction_unsettled.json'
     transaction_f = open(file_path + file_key_regex + transaction_filename, 'w+')
+    transaction_unsettled_f = open(file_path + file_key_regex + transaction_unsettled_filename, 'w+')
 
-    trxs = kwargs['ti'].xcom_pull(task_ids='get_transaction_details')
+    trxs_obj = kwargs['ti'].xcom_pull(task_ids='get_transaction_details')
+    trxs = trxs_obj['transaction_details']
+    trxs_u = trxs_obj['transaction_unsettled_details']
     for trx in trxs:
         transaction_f.write(json.dumps(trx) + "\n")
-
     transaction_f.close()
+
+    for trx_u in trxs_u:
+        transaction_unsettled_f.write(json.dumps(trx_u) + "\n")
+    transaction_unsettled_f.close()
 
     return_data = [
         {"type": "transaction", "path": file_path + file_key_regex + transaction_filename,
-         "filename": transaction_filename}
+         "filename": transaction_filename},
+        {"type": "transaction", "path": file_path + file_key_regex + transaction_unsettled_filename,
+         "filename": transaction_unsettled_filename}
     ]
 
     return return_data
@@ -328,7 +418,8 @@ def upload_transaction_data_to_s3_bucket(**kwargs):
         if os.stat(file_to_upload['path']).st_size == 0:
             pass
         else:
-            s3_folder = s3_folder_path.format(datasource_type=datasource_type, transaction_type=file_to_upload['type'],
+            s3_folder = s3_folder_path.format(datasource_type=datasource_type,
+                                              transaction_type=file_to_upload['type'],
                                               account_name=account_name,
                                               year=year,
                                               month=month, day=dayy)
